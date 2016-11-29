@@ -46,3 +46,5 @@ fabric.properties
 **/*.js
 
 node_modules
+
+.idea
