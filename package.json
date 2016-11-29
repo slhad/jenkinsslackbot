@@ -1,0 +1,26 @@
+{
+  "name": "botslack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bot",
+    "slack"
+  ],
+  "author": "Sylvain Rivierre",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@slack/client": "^3.6.1",
+    "jenkins": "^0.20.0",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "0.0.0",
+    "@types/underscore": "^1.7.36",
+    "typescript": "^2.0.10"
+  }
+}
