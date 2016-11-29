@@ -7,10 +7,19 @@ import _ = require('underscore');
 
 var bot_token = process.env.SLACK_BOT_TOKEN || '';
 var jenkins_url = process.env.JENKINS_URL || '';
+var log_level = process.env.LOG_LEVEL || '';
+var crumb_issuer = process.env.CRUMB_ISSUER == "true" || false;
 
-var jenkinsClient = jenkins({baseUrl: jenkins_url, crumbIssuer: true});
 
-var rtm = new RtmClient(bot_token);
+var jenkinsClient = jenkins({baseUrl: jenkins_url, crumbIssuer: crumb_issuer});
+
+var opts: any = {};
+
+if (log_level !== "") {
+    opts["logLevel"] = log_level;
+}
+
+var rtm = new RtmClient(bot_token, opts);
 rtm.start();
 
 if (RegExp.prototype.flags === undefined) {
@@ -205,11 +214,34 @@ let actions: BotAction[] = [
         func: function (slackUser: SlackUser, message: SlackMessage): void {
             let text = "Help :\n";
             _.each(actions, function (action: BotAction) {
-                if (action.text !== "") {
+                if (action.text !== "" && !action.notVisibleInHelp) {
                     text += "\t - " + action.text + " - " + action.description + "\n";
                 }
             });
             rtm.sendMessage(text, message.channel);
+        }
+    },
+    {
+        text: "life is too hard",
+        description: "reboot myself to forget",
+        func: function (slackUser: SlackUser, message: SlackMessage): void {
+            rtm.sendMessage('Rebooting system ....', message.channel);
+            process.exit();
+        }
+    },
+    {
+        text: "take this beer",
+        description: "give a beer to the bot",
+        func: function (slackUser: SlackUser, message: SlackMessage): void {
+            rtm.sendMessage('<@' + message.user + '> Thanks mate', message.channel);
+        }
+    },
+    {
+        text: "take this bear",
+        description: "give a bear to the bot",
+        notVisibleInHelp: false,
+        func: function (slackUser: SlackUser, message: SlackMessage): void {
+            rtm.sendMessage('Not that kind of BEER !', message.channel);
         }
     },
     {
@@ -240,11 +272,11 @@ function getAction(user: SlackUser, text: string): BotAction {
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message: SlackMessage) {
     let slackUser: SlackUser = rtm.dataStore.getUserById(rtm.activeUserId);
+    if (message.text) {
+        let action = getAction(slackUser, message.text);
 
-    let action = getAction(slackUser, message.text);
-
-    if (action) {
-        action.func(slackUser, message);
+        if (action) {
+            action.func(slackUser, message);
+        }
     }
-
 });

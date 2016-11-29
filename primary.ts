@@ -233,6 +233,7 @@ interface BotAction {
     text: string;
     description: string;
     regex?: RegExp;
+    notVisibleInHelp?: boolean;
     func(slackUser: SlackUser, message: SlackMessage): void;
 }
 
