@@ -239,7 +239,7 @@ let actions: BotAction[] = [
     {
         text: "take this bear",
         description: "give a bear to the bot",
-        notVisibleInHelp: false,
+        notVisibleInHelp: true,
         func: function (slackUser: SlackUser, message: SlackMessage): void {
             rtm.sendMessage('Not that kind of BEER !', message.channel);
         }
