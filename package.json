@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"no test specified for now\" && exit 0",
-    "run" : "node index.js"
+    "build": "./node_modules/typescript/bin/tsc",
+    "run": "node index.js"
   },
   "keywords": [
     "bot",

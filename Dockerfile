@@ -9,6 +9,8 @@ ADD . /nodejs/
 RUN rm Dockerfile
 RUN rm buildAndPush.sh
 
+RUN npm run-script build
+
 RUN npm test
 
 RUN rm -Rf test
