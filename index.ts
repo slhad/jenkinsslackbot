@@ -162,15 +162,15 @@ let actions: BotAction[] = [
                         msg += "You got an error, maybe it does (not) have parameters ... : " + err.message;
                     } else {
                         msg += "Your job " + jobName + " have been scheduled !";
-                        jenkinsClient.queue.item(queueItemNumber, function (err: Error, data: any) {
-                            let msgQueue = "";
-                            if (err) {
-                                msgQueue += "Error while getting the queue detail for your job";
-                            } else {
-                                msgQueue += "You can see the job log with : " + slackUser.name + " build log " + jobName + " " + data.executable.number;
-                            }
-                            rtm.sendMessage(msgQueue, message.channel);
-                        });
+                        // jenkinsClient.queue.item(queueItemNumber, function (err: Error, data: any) {
+                        //     let msgQueue = "";
+                        //     if (err) {
+                        //         msgQueue += "Error while getting the queue detail for your job";
+                        //     } else {
+                        //         msgQueue += "You can see the job log with : " + slackUser.name + " build log " + jobName + " " + data.executable.number;
+                        //     }
+                        //     rtm.sendMessage(msgQueue, message.channel);
+                        // });
                     }
                     rtm.sendMessage(msg, message.channel);
                 });
