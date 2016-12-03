@@ -1,4 +1,5 @@
 var RtmClient = require('@slack/client').RtmClient;
+var WebClient = require('@slack/client').WebClient;
 var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
 var jenkins = require('jenkins');
 
@@ -20,6 +21,7 @@ if (log_level !== "") {
 }
 
 var rtm = new RtmClient(bot_token, opts);
+var webClient = new WebClient(bot_token);
 rtm.start();
 
 if (RegExp.prototype.flags === undefined) {
@@ -123,7 +125,18 @@ let actions: BotAction[] = [
                     } else {
                         msg += "Your job " + jobName + " output :\n" + data;
                     }
-                    rtm.sendMessage(msg, message.channel);
+                    let obj = {
+                        attachments: [{
+                            fallback: "Job log",
+                            pretext: "Job log of " + jobName + " " + jobNumber,
+                            text: msg
+                        }]
+                    };
+                    webClient.chat.postMessage(message.channel, "", obj, function (err: Error, data: any) {
+                        if (err) {
+                            console.log(err.message)
+                        }
+                    });
                 });
             }
         }
@@ -146,21 +159,20 @@ let actions: BotAction[] = [
                 jenkinsClient.job.build(options, function (err: Error, queueItemNumber: string) {
                     let msg = "";
                     if (err) {
-                        msg += "You got an error, maybe it does (not) have parameters ... ";
+                        msg += "You got an error, maybe it does (not) have parameters ... : " + err.message;
                     } else {
                         msg += "Your job " + jobName + " have been scheduled !";
+                        jenkinsClient.queue.item(queueItemNumber, function (err: Error, data: any) {
+                            let msgQueue = "";
+                            if (err) {
+                                msgQueue += "Error while getting the queue detail for your job";
+                            } else {
+                                msgQueue += "You can see the job log with : " + slackUser.name + " build log " + jobName + " " + data.executable.number;
+                            }
+                            rtm.sendMessage(msgQueue, message.channel);
+                        });
                     }
                     rtm.sendMessage(msg, message.channel);
-
-                    jenkinsClient.queue.item(queueItemNumber, function (err: Error, data: any) {
-                        let msgQueue = "";
-                        if (err) {
-                            msgQueue += "Error while getting the queue detail for your job";
-                        } else {
-                            msgQueue += "You can see the job log with : " + slackUser.name + " build log " + jobName + " " + data.executable.number;
-                        }
-                        rtm.sendMessage(msgQueue, message.channel);
-                    });
                 });
             }
         }
@@ -216,11 +228,16 @@ let actions: BotAction[] = [
                 });
                 let obj = {
                     attachments: [{
-                        title: "Jobs :",
+                        fallback: "Job list",
+                        pretext: "Jobs :",
                         text: msg
                     }]
                 };
-                rtm.send(obj, message.channel);
+                webClient.chat.postMessage(message.channel, "", obj, function (err: Error, data: any) {
+                    if (err) {
+                        console.log(err.message)
+                    }
+                });
             });
         }
     },
