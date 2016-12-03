@@ -143,14 +143,24 @@ let actions: BotAction[] = [
                 if (jobParameters) {
                     options["parameters"] = jobParameters;
                 }
-                jenkinsClient.job.build(options, function (err: Error, jobNumber: string) {
+                jenkinsClient.job.build(options, function (err: Error, queueItemNumber: string) {
                     let msg = "";
                     if (err) {
-                        msg += "You got an error, maybe it does (not) have parameters ... : " + err.message + "\n" + err.stack;
+                        msg += "You got an error, maybe it does (not) have parameters ... ";
                     } else {
-                        msg += "Your job " + jobName + " have been scheduled as number " + jobNumber + "!";
+                        msg += "Your job " + jobName + " have been scheduled !";
                     }
                     rtm.sendMessage(msg, message.channel);
+
+                    jenkinsClient.queue.item(queueItemNumber, function (err: Error, data: any) {
+                        let msgQueue = "";
+                        if (err) {
+                            msgQueue += "Error while getting the queue detail for your job";
+                        } else {
+                            msgQueue += "You can see the job log with : " + slackUser.name + " build log " + jobName + " " + data.executable.number;
+                        }
+                        rtm.sendMessage(msgQueue, message.channel);
+                    });
                 });
             }
         }
@@ -200,11 +210,17 @@ let actions: BotAction[] = [
         description: "the list of jenkins jobs",
         func: function (slackUser: SlackUser, message: SlackMessage): void {
             jenkinsClient.job.list(function (err: any, data: JenkinsJob[]) {
-                let msg = "Jobs :\n";
+                let msg = "";
                 data.forEach(function (job) {
                     msg += job.name + "\n"
                 });
-                rtm.sendMessage(msg, message.channel);
+                let obj = {
+                    attachments: [{
+                        title: "Jobs :",
+                        text: msg
+                    }]
+                };
+                rtm.send(obj, message.channel);
             });
         }
     },
